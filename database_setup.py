@@ -10,35 +10,49 @@ Base = declarative_base()
 ################################
 
 
-class Restaurant(Base):
-    __tablename__ = 'restaurant'
+class Category(Base):
+    __tablename__ = 'category'
     name = Column(String(80), nullable = False)
     id = Column(Integer, primary_key = True)
 
-
-
-class MenuItem(Base):
-    __tablename__ = 'menu_item'
+class Brand(Base):
+    __tablename__ = 'brand'
     name = Column(String(80), nullable = False)
     id = Column(Integer, primary_key = True)
 
-    course = Column(String(250))
+class User(Base):
+    __tablename__ = 'user'
+    name = Column(String(80), nullable = False)
+    id = Column(Integer, primary_key = True)
+
+class Camera(Base):
+    __tablename__ = 'camera'
+    name = Column(String(100), nullable = False)
+    brand = relationship(Brand)
+    brand_name = Column(String(80), ForeignKey('brand.name'))
+    brand_id = Column(Integer, ForeignKey('brand.id'))
     description = Column(String(250))
-
     price = Column(String(8))
-    restaurant_id = Column(Integer, ForeignKey('restaurant.id'))
+    id = Column(Integer, primary_key = True)
+    category = relationship(Category)
+    category_id = Column(Integer, ForeignKey('category.id'))
+    user = relationship(User)
+    user_id = Column(Integer, ForeignKey('user.id'))
 
-    restaurant = relationship(Restaurant)
 
     @property
     def serialize(self):
         #Returns object data in easily serializable format for JSON
         return {
             'name'  : self.name,
-            'description' : self.description,
             'id'    : self.id,
+            'category_id' : self.category_id,
+            'brand': self.brand_name,
+            'brand_id': self.brand_id,
+            'description' : self.description,
             'price' : self.price,
-            'course': self.course
+            'user_id':self.user_id
+
         }
 
 
