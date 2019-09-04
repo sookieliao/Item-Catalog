@@ -27,10 +27,14 @@
 
         <div>
           <p class='name'>{{i.name}}</p>
+          <p class='brand'>{{i.brand_id}}
           <p class='price'>{{i.price}}</p>
-          <p class='course'>{{i.course}}</p>
+          <p class='condition'>{{i.condition}}</p>
           <p class='description'>{{i.description}}</p>
+          <a href="{{url_for('editItem',user_id=user_id, camera_id=i.id)}}"><h3>Edit<h3></a>
+          <a href="{{url_for('deleteItem',user_id=user_id, camera_id = i.id)}}"><h3>Delete<h3></a>
         </div>
+
 
       {% endfor %}
       </div>

@@ -20,8 +20,8 @@ DBSession = sessionmaker(bind=engine)
 # Fake Menu Items
 # items = [ {'name':'Cheese Pizza', 'description':'made with fresh cheese', 'price':'$5.99','course' :'Entree', 'id':'1'}, {'name':'Chocolate Cake','description':'made with Dutch Chocolate', 'price':'$3.99', 'course':'Dessert','id':'2'},{'name':'Caesar Salad', 'description':'with fresh organic vegetables','price':'$5.99', 'course':'Entree','id':'3'},{'name':'Iced Tea', 'description':'with lemon','price':'$.99', 'course':'Beverage','id':'4'},{'name':'Spinach Dip', 'description':'creamy dip with fresh spinach','price':'$1.99', 'course':'Appetizer','id':'5'} ]
 # item =  {'name':'Cheese Pizza','description':'made with fresh cheese','price':'$5.99','course' :'Entree'}
-cameras = []
-camera = {'name':'canon 650d', 'id':3, 'brand_name':'canon','description':'nice','condition':'moderate','price':'$700'}
+#cameras = []
+#camera = {'name':'canon 650d', 'id':3, 'brand_name':'canon','description':'nice','condition':'moderate','price':'$700'}
 
 
 @app.route('/')
@@ -61,13 +61,13 @@ def addItem(user_id):
         return render_template('addItem.html', user_id=user_id)
     else:  # for a POST
         session = DBSession()
-        newItem = Camera(name=request.form['name'],brand_id=request.form['brand'],
+        newItem = Camera(name=request.form['name'],brand_id=request.form['brand'],user_id=user_id,
             description=request.form['description'],price=request.form['price'],condition=request.form['condition'])
         session.add(newItem)
         session.commit()
 
-        cameras = session.query(Camera).filter_by(user_id=user_id)
-    return redirect(url_for('showMyStore.html', cameras = cameras, length=len(cameras), user_id=user_id))
+        cameras = session.query(Camera).filter_by(user_id=user_id).all()
+    return redirect(url_for('showMyStore', cameras = cameras, length=len(cameras), user_id=user_id))
 
 #try @app.route('/sookiesusedcameras/mystore=<int:user_id>', methods=['GET','POST'])
 @app.route('/sookiesusedcameras/mystore/user=<int:user_id>')
@@ -78,11 +78,12 @@ def showMyStore(user_id):
 
 @app.route('/sookiesusedcameras/user=<int:user_id>/camera=<int:camera_id>/edit', methods=['GET','POST'])
 def editItem(user_id, camera_id):
+    session = DBSession()
+    camEdit = session.query(Camera).filter_by(id=camera_id).one()
+
     if request.method == 'GET':
-        return render_template('editItem.html', camera= camera, user_id=user_id)
+        return render_template('editItem.html', camera= camEdit, user_id=user_id)
     else:  # for a POST
-        session = DBSession()
-        camEdit = session.query(Camera).filter_by(id=camera_id).one()
         camEdit.name = request.form['name']
         camEdit.brand_id=request.form['brand']
         camEdit.description=request.form['description']
@@ -91,21 +92,21 @@ def editItem(user_id, camera_id):
         session.add(camEdit)
         session.commit()
 
-        cameras = session.query(Camera).filter_by(user_id=user_id)
-    return redirect(url_for('showMyStore.html', cameras = cameras, length=len(cameras), user_id=user_id))
+        cameras = session.query(Camera).filter_by(user_id=user_id).all()
+    return redirect(url_for('showMyStore', cameras = cameras, length=len(cameras), user_id=user_id))
 
 
 @app.route('/sookiesusedcameras/user=<int:user_id>/camera=<int:camera_id>/delete', methods=['GET','POST'])
 def deleteItem(user_id, camera_id):
+    session = DBSession()
+    camDelete = session.query(Camera).filter_by(id=camera_id).one()
     if request.method == 'GET':
-        return render_template('deleteItem.html', camera= camera, user_id=user_id)
+        return render_template('deleteItem.html', camera= camDelete, user_id=user_id)
     else:  # for a POST
-        session = DBSession()
-        camDelete = session.query(Camera).filter_by(id=camera_id).one()
         session.delete(camDelete)
         session.commit()
-        cameras = session.query(Camera).filter_by(user_id=user_id)
-    return redirect(url_for('showMyStore.html', cameras = cameras, length=len(cameras), user_id=user_id))
+        cameras = session.query(Camera).filter_by(user_id=user_id).all()
+    return redirect(url_for('showMyStore', cameras = cameras, length=len(cameras), user_id=user_id))
 
 
 # These are for API calls that returns JSON file
