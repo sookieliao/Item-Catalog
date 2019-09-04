@@ -1,0 +1,41 @@
+<html>
+<head>
+    <link rel="stylesheet" type='text/css' href="{{url_for('static', filename='styles.css')}}">
+  </head>
+  <body>
+    <h1> Sookie's Used Cameras </h1>
+    <h1> Cameras that are in {{condition}}} condition. </h1>
+    {% if length <= 0 %}
+    <p> There's currently no camera on sell for this brand. </p>
+    {% endif %}
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul>
+      {% for message in messages %}
+      <li><strong>{{message}}</strong></li>
+      {% endfor%}
+    </ul>
+    {% endif %}
+    {% endwith%}
+
+    <a href="{{url_for('checkUserWhenAddItem')}}"><h3>Post a camera for sell!<h3></a>
+
+    {% if length > 0 %}
+
+      <div>
+      {% for i in cameras %}
+
+        <div>
+          <p class='name'>{{camera.name}}</p>
+          <p class='price'>{{camera.price}}</p>
+          <p class='course'>{{camera.course}}</p>
+          <p class='description'>{{camera.description}}</p>
+        </div>
+
+      {% endfor %}
+      </div>
+
+     {% endif %}
+  </body>
+</html>

@@ -20,44 +20,51 @@ from database_setup import Base, Category, Brand, User, Camera
 # Fake Menu Items
 # items = [ {'name':'Cheese Pizza', 'description':'made with fresh cheese', 'price':'$5.99','course' :'Entree', 'id':'1'}, {'name':'Chocolate Cake','description':'made with Dutch Chocolate', 'price':'$3.99', 'course':'Dessert','id':'2'},{'name':'Caesar Salad', 'description':'with fresh organic vegetables','price':'$5.99', 'course':'Entree','id':'3'},{'name':'Iced Tea', 'description':'with lemon','price':'$.99', 'course':'Beverage','id':'4'},{'name':'Spinach Dip', 'description':'creamy dip with fresh spinach','price':'$1.99', 'course':'Appetizer','id':'5'} ]
 # item =  {'name':'Cheese Pizza','description':'made with fresh cheese','price':'$5.99','course' :'Entree'}
-# items = []
+cameras = []
+camera = {'name':'canon 650d', 'id':3, 'brand_name':'canon','description':'nice','condition':'moderate','price':'$700'}
 
 
 @app.route('/')
 @app.route('/sookiesusedcameras')
 def showCameras():
-    return "this page will show all products."
+    return render_template('showCameras.html',cameras = cameras, length=len(cameras))
 
 @app.route('/sookiesusedcameras/brand=<brand_name>')
 def showCamerasWithBrand(brand_name):
-    return "this page will show all products with brand %s" % brand_name
+    return render_template('showCamerasWithBrand.html',cameras = cameras, length=len(cameras), brand=brand_name)
 
 @app.route('/sookiesusedcameras/condition=<condition>')
 def showCamerasWithCondition(condition):
-    return "this page will show all products that are %s" % condition
+    return render_template('showCamerasWithCondition.html',cameras = cameras, length=len(cameras), condition=condition)
+
+@app.route('/sookiesusedcameras/login')
+def authendicate():
+    return 'perform authendicattion.'
 
 @app.route('/sookiesusedcameras/new')
 def checkUserWhenAddItem():
+    # if user is not log in, redirect to log in page
+    # else render addItem()
     return "show login/additem page depends on whether user logs in."
 
 @app.route('/sookiesusedcameras/user=<int:user_id>/new', methods=['GET','POST'])
 def addItem(user_id):
-    return "show additem page."
+    # ideally, when user cancel craeting, it should be back to whever they were.
+    return render_template('addItem.html', user_id=user_id)
 
 #try @app.route('/sookiesusedcameras/mystore=<int:user_id>', methods=['GET','POST'])
 @app.route('/sookiesusedcameras/mystore/user=<int:user_id>')
 def showMyStore(user_id):
-    return 'This is the page displaying my store'
+    return render_template('showMyStore.html',cameras = cameras, length=len(cameras), user_id=user_id)
 
 @app.route('/sookiesusedcameras/user=<int:user_id>/camera=<int:camera_id>/edit', methods=['GET','POST'])
 def editItem(user_id, camera_id):
-    return 'this is the page for editing selling camera'
+    return render_template('editItem.html', camera= camera, user_id=user_id)
 
 
-@app.route('/sookiesusedcameras/use=<int:user_id>/camera=<int:camera_id>/delete', methods=['GET','POST'])
+@app.route('/sookiesusedcameras/user=<int:user_id>/camera=<int:camera_id>/delete', methods=['GET','POST'])
 def deleteItem(user_id, camera_id):
-    return 'this is the page for deleting selling camera'
-
+    return render_template('deleteItem.html', camera= camera, user_id=user_id)
 
 
 # These are for API calls that returns JSON file
@@ -73,7 +80,6 @@ def getCamerasWithBrand(brand_name):
 def getCamerasWithCondition(condition):
     return "this page will show json for all products for a condition."
 
-#try @app.route('/sookiesusedcameras/mystore=<int:user_id>', methods=['GET','POST'])
 @app.route('/sookiesusedcameras/mystore/user=<int:user_id>/JSON')
 def getMyStore(user_id):
     return 'This is the page return JSON for my store'

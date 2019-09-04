@@ -1,0 +1,46 @@
+<html>
+  <head>
+    <link rel="stylesheet" type='text/css' href="{{url_for('static', filename='styles.css')}}">
+  </head>
+  <body>
+    <h1>Edit Camera Information</h1>
+    <form action="{{ url_for('editItem',user_id=user_id, camera_id=camera.id)}}", method="POST">
+      <dl>
+        <dt>Name:</dt>
+        <dd><input type='text' size='30' name='name' placeholder="{{camera.name}}"></dd>
+
+        <dt>Brand:</dt>
+        <dd><input type='text' size='30' name='brand' placeholder="{{camera.brand}}"></dd>
+
+        <dt>Price:</dt>
+        <dd><input type='text' size='8' name='price' placeholder="{{camera.price}}"></dd>
+
+        <dt>Description:</dt>
+        <dd><textarea name='description' rows='5' cols='40' placeholder="{{camera.description}}"></textarea></dd>
+
+        <dt>Condition:</dt>
+
+        {% if camera.condition=='Excellent' %}
+        <dd><input type='radio' name='condition' value='Excellent' checked>Excellent</dd>
+        {%else%}
+        <dd><input type='radio' name='condition' value='Excellent'>Excellent</dd>
+        {% endif%}
+
+        {% if camera.condition=='Moderate' %}
+        <dd><input type='radio' name='condition' value='Moderate' checked>Moderate</dd>
+        {%else%}
+        <dd><input type='radio' name='condition' value='Moderate'>Moderate</dd>
+        {% endif%}
+
+        {% if camera.condition=='Not So Well' %}
+        <dd><input type='radio' name='condition' value='Not So Well' checked>Not So Well</dd>
+        {%else%}
+        <dd><input type='radio' name='condition' value='Not So Well'>Not So Well</dd>
+        {% endif%}
+
+      </dl>
+      <input type='submit' value='Edit'>
+      <a href="{{url_for('showMyStore',user_id=user_id)}}">Cancel</a>
+    </form>
+  </body>
+</html>
