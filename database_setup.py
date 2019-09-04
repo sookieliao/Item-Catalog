@@ -24,15 +24,17 @@ class User(Base):
     __tablename__ = 'user'
     name = Column(String(80), nullable = False)
     id = Column(Integer, primary_key = True)
+    account_name = Column(String(20), nullable = False)
+    password = Column(String(20), nullable = False)
 
 class Camera(Base):
     __tablename__ = 'camera'
     name = Column(String(100), nullable = False)
     brand = relationship(Brand)
-    brand_name = Column(String(80), ForeignKey('brand.name'))
     brand_id = Column(Integer, ForeignKey('brand.id'))
     description = Column(String(250))
     price = Column(String(8))
+    condition = Column(String(15))
     id = Column(Integer, primary_key = True)
     category = relationship(Category)
     category_id = Column(Integer, ForeignKey('category.id'))
@@ -47,7 +49,6 @@ class Camera(Base):
             'name'  : self.name,
             'id'    : self.id,
             'category_id' : self.category_id,
-            'brand': self.brand_name,
             'brand_id': self.brand_id,
             'description' : self.description,
             'price' : self.price,
@@ -58,6 +59,6 @@ class Camera(Base):
 
 ################################
 
-engine = create_engine('sqlite:///restaurantmenu.db')
+engine = create_engine('sqlite:///cameras.db')
 
 Base.metadata.create_all(engine)

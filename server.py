@@ -6,9 +6,9 @@ from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Category, Brand, User, Camera
 
 # Connect to database
-#engine = create_engine('sqlite:///restaurantmenu.db')
-#Base.metadata.bind = engine
-#DBSession = sessionmaker(bind=engine)
+engine = create_engine('sqlite:///cameras.db')
+Base.metadata.bind = engine
+DBSession = sessionmaker(bind=engine)
 
 
 # Fake Restaurants
@@ -27,14 +27,21 @@ camera = {'name':'canon 650d', 'id':3, 'brand_name':'canon','description':'nice'
 @app.route('/')
 @app.route('/sookiesusedcameras')
 def showCameras():
+    session = DBSession()
+    cameras = session.query(Camera).all()
     return render_template('showCameras.html',cameras = cameras, length=len(cameras))
 
-@app.route('/sookiesusedcameras/brand=<brand_name>')
-def showCamerasWithBrand(brand_name):
-    return render_template('showCamerasWithBrand.html',cameras = cameras, length=len(cameras), brand=brand_name)
+@app.route('/sookiesusedcameras/brand=<int:brand_id>')
+def showCamerasWithBrand(brand_id):
+    session = DBSession()
+    cameras = session.query(Camera).filter_by(brand_id=brand_id).all()
+    brand = session.query(Brand).filter_by(id=brand_id).one()
+    return render_template('showCamerasWithBrand.html',cameras = cameras, length=len(cameras), brand=brand.name)
 
 @app.route('/sookiesusedcameras/condition=<condition>')
 def showCamerasWithCondition(condition):
+    session = DBSession()
+    cameras = session.query(Camera).filter_by(condition=condition).all()
     return render_template('showCamerasWithCondition.html',cameras = cameras, length=len(cameras), condition=condition)
 
 @app.route('/sookiesusedcameras/login')
@@ -50,21 +57,55 @@ def checkUserWhenAddItem():
 @app.route('/sookiesusedcameras/user=<int:user_id>/new', methods=['GET','POST'])
 def addItem(user_id):
     # ideally, when user cancel craeting, it should be back to whever they were.
-    return render_template('addItem.html', user_id=user_id)
+    if request.method == 'GET':
+        return render_template('addItem.html', user_id=user_id)
+    else:  # for a POST
+        session = DBSession()
+        newItem = Camera(name=request.form['name'],brand_id=request.form['brand'],
+            description=request.form['description'],price=request.form['price'],condition=request.form['condition'])
+        session.add(newItem)
+        session.commit()
+
+        cameras = session.query(Camera).filter_by(user_id=user_id)
+    return redirect(url_for('showMyStore.html', cameras = cameras, length=len(cameras), user_id=user_id))
 
 #try @app.route('/sookiesusedcameras/mystore=<int:user_id>', methods=['GET','POST'])
 @app.route('/sookiesusedcameras/mystore/user=<int:user_id>')
 def showMyStore(user_id):
+    session = DBSession()
+    cameras = session.query(Camera).filter_by(user_id=user_id).all()
     return render_template('showMyStore.html',cameras = cameras, length=len(cameras), user_id=user_id)
 
 @app.route('/sookiesusedcameras/user=<int:user_id>/camera=<int:camera_id>/edit', methods=['GET','POST'])
 def editItem(user_id, camera_id):
-    return render_template('editItem.html', camera= camera, user_id=user_id)
+    if request.method == 'GET':
+        return render_template('editItem.html', camera= camera, user_id=user_id)
+    else:  # for a POST
+        session = DBSession()
+        camEdit = session.query(Camera).filter_by(id=camera_id).one()
+        camEdit.name = request.form['name']
+        camEdit.brand_id=request.form['brand']
+        camEdit.description=request.form['description']
+        camEdit.price=request.form['price']
+        camEdit.condition=request.form['condition']
+        session.add(camEdit)
+        session.commit()
+
+        cameras = session.query(Camera).filter_by(user_id=user_id)
+    return redirect(url_for('showMyStore.html', cameras = cameras, length=len(cameras), user_id=user_id))
 
 
 @app.route('/sookiesusedcameras/user=<int:user_id>/camera=<int:camera_id>/delete', methods=['GET','POST'])
 def deleteItem(user_id, camera_id):
-    return render_template('deleteItem.html', camera= camera, user_id=user_id)
+    if request.method == 'GET':
+        return render_template('deleteItem.html', camera= camera, user_id=user_id)
+    else:  # for a POST
+        session = DBSession()
+        camDelete = session.query(Camera).filter_by(id=camera_id).one()
+        session.delete(camDelete)
+        session.commit()
+        cameras = session.query(Camera).filter_by(user_id=user_id)
+    return redirect(url_for('showMyStore.html', cameras = cameras, length=len(cameras), user_id=user_id))
 
 
 # These are for API calls that returns JSON file
