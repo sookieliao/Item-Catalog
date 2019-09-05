@@ -10,18 +10,103 @@ engine = create_engine('sqlite:///cameras.db')
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 
+# create user session with flask.
+from flask import session as login_session
+import random, string
 
-# Fake Restaurants
-# restaurant = {'name': 'The CRUDdy Crab', 'id': '1'}
+loggedIn = False
 
-# restaurants = [{'name': 'The CRUDdy Crab', 'id': '1'}, {'name':'Blue Burgers', 'id':'2'},{'name':'Taco Hut', 'id':'3'}]
+@app.route('/login')
+def showLogin():
+    state = ''.join(random.choice(string.ascii_uppercase+string.digits) for x in xrange(32))
+    login_session['state']=state
+    return render_template('login.html', STATE=state)
+
+# Store the access token in the session for later use.
+
+    login_session['username'] = data['name']
+    login_session['picture'] = data['picture']
+    login_session['email'] = data['email']
+
+    # See if a user exists, if it doesn't make a new one
+
+    user_id = getUserId(login_session['email'])
+    if not user_id:
+        user_id = createUser(login_session)
+    login_session['user_id']=user_id
+
+    output = ''
+    output += '<h1>Welcome, '
+    output += login_session['username']
+    output += '!</h1>'
+    output += '<img src="'
+    output += login_session['picture']
+    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    flash("you are now logged in as %s" % login_session['username'])
+    print "done!"
+    return output
 
 
-# Fake Menu Items
-# items = [ {'name':'Cheese Pizza', 'description':'made with fresh cheese', 'price':'$5.99','course' :'Entree', 'id':'1'}, {'name':'Chocolate Cake','description':'made with Dutch Chocolate', 'price':'$3.99', 'course':'Dessert','id':'2'},{'name':'Caesar Salad', 'description':'with fresh organic vegetables','price':'$5.99', 'course':'Entree','id':'3'},{'name':'Iced Tea', 'description':'with lemon','price':'$.99', 'course':'Beverage','id':'4'},{'name':'Spinach Dip', 'description':'creamy dip with fresh spinach','price':'$1.99', 'course':'Appetizer','id':'5'} ]
-# item =  {'name':'Cheese Pizza','description':'made with fresh cheese','price':'$5.99','course' :'Entree'}
-#cameras = []
-#camera = {'name':'canon 650d', 'id':3, 'brand_name':'canon','description':'nice','condition':'moderate','price':'$700'}
+def getUserId(email):
+    session = DBSession()
+    try:
+        user = session.query(User).filter_by(email=email).one()
+        return user.id
+    except:
+        return None
+
+def getUserInfo(user_id):
+    session = DBSession()
+    user = session.query(User).filter_by(id=user_id).one
+    return user
+
+@app.route('/sookiesusedcameras/newuser', methods=['GET','POST'])
+def createUser():
+    if request.method == 'GET':
+        return render_template('createUser.html')
+    else:
+        session = DBSession()
+        if request.form['password1'] == request.form['password2']:
+            print "passwords are the same. now adding user..."
+            user = User(name=request.form['name'],email=request.form['email'],password=request.form['password1'])
+            session.add(user)
+            session.commit()
+            print "User created successfully with user_id %s!"% user.id
+            return redirect(url_for('showMyStore', user_id=user.id))
+        else:
+            print "Password doesn't match. Please try again."
+
+
+@app.route('/sookiesusedcameras/login', methods=['GET','POST'])
+def login():
+    if request.method == 'GET':
+        return render_template('login.html')
+    else:
+        session = DBSession()
+        user = session.query(User).filter_by(request.form['email']).one()
+
+        if not user:
+            print "There's no record for this email.Please try again."
+
+        elif user.name != request.form['name']:
+            print "Name or email is incorrect.Please try again."
+        elif request.form['password1'] != request.form['password2']:
+            print "Passwords repeated doesn't match. Please try again."
+        elif request.form['password1'] != user.password:
+            print "Password is incorrect. Please try again."
+        else:
+            print "Login success. Redirecting to my store..."
+            loggedIn = True
+            return redirect(url_for('showMyStore', user_id=user.id))
+
+
+@app.route('/sookiesusedcameras/new')
+def checkUserWhenAddItem():
+    # if user is not log in, redirect to log in page
+    if not loggedIn:
+        redirect(url_for('login'))
+    else:
+        return render_template('addItem.html', user_id=user_id)
 
 
 @app.route('/')
@@ -44,15 +129,7 @@ def showCamerasWithCondition(condition):
     cameras = session.query(Camera).filter_by(condition=condition).all()
     return render_template('showCamerasWithCondition.html',cameras = cameras, length=len(cameras), condition=condition)
 
-@app.route('/sookiesusedcameras/login')
-def authendicate():
-    return 'perform authendicattion.'
 
-@app.route('/sookiesusedcameras/new')
-def checkUserWhenAddItem():
-    # if user is not log in, redirect to log in page
-    # else render addItem()
-    return "show login/additem page depends on whether user logs in."
 
 @app.route('/sookiesusedcameras/user=<int:user_id>/new', methods=['GET','POST'])
 def addItem(user_id):
@@ -65,9 +142,7 @@ def addItem(user_id):
             description=request.form['description'],price=request.form['price'],condition=request.form['condition'])
         session.add(newItem)
         session.commit()
-
-        cameras = session.query(Camera).filter_by(user_id=user_id).all()
-    return redirect(url_for('showMyStore', cameras = cameras, length=len(cameras), user_id=user_id))
+    return redirect(url_for('showMyStore', user_id=user_id))
 
 #try @app.route('/sookiesusedcameras/mystore=<int:user_id>', methods=['GET','POST'])
 @app.route('/sookiesusedcameras/mystore/user=<int:user_id>')
@@ -93,7 +168,7 @@ def editItem(user_id, camera_id):
         session.commit()
 
         cameras = session.query(Camera).filter_by(user_id=user_id).all()
-    return redirect(url_for('showMyStore', cameras = cameras, length=len(cameras), user_id=user_id))
+    return redirect(url_for('showMyStore',user_id=user_id))
 
 
 @app.route('/sookiesusedcameras/user=<int:user_id>/camera=<int:camera_id>/delete', methods=['GET','POST'])
@@ -105,8 +180,7 @@ def deleteItem(user_id, camera_id):
     else:  # for a POST
         session.delete(camDelete)
         session.commit()
-        cameras = session.query(Camera).filter_by(user_id=user_id).all()
-    return redirect(url_for('showMyStore', cameras = cameras, length=len(cameras), user_id=user_id))
+    return redirect(url_for('showMyStore', user_id=user_id))
 
 
 # These are for API calls that returns JSON file

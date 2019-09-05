@@ -1,0 +1,28 @@
+<html>
+  <head>
+    <link rel="stylesheet" type='text/css' href="{{url_for('static', filename='styles.css')}}">
+  </head>
+  <body>
+    <h1>Create your account...</h1>
+    <form action="{{url_for('createUser')}}", method='POST'>
+      <dl>
+
+        <dt>Userame:</dt>
+        <dd><input type='text' size='30' name='name'></dd>
+
+        <dt>Email:</dt>
+        <dd><input type='email' size='30' name='email'></dd>
+
+        <dt>Password:</dt>
+        <dd><input type='password' size='20' name='password1'></dd>
+
+        <dt>Repeat Password:</dt>
+        <dd><input type='password' size='20' name='password2'></dd>
+
+      </dl>
+
+        <input type='submit' value='Submit'>
+        <a href="{{url_for('showCameras')}}">Cancel</a>
+    </form>
+  </body>
+</html>
