@@ -3,27 +3,40 @@
     <link rel="stylesheet" type='text/css' href="{{url_for('static', filename='styles.css')}}">
   </head>
   <body>
-    <h1> Sookie's Used Cameras </h1>
-    <h1> Cameras produced by {{brand}} </h1>
-    {% if length <= 0 %}
-    <p> There's currently no camera on sell for this brand. </p>
-    {% endif %}
+    <div>
+      <div class=header>
+        <h1> Sookie's Used Cameras </h1>
+        <h1> Cameras produced by {{brand}} </h1>
+        {% if length <= 0 %}
+        <p> There's currently no camera on sell for this brand. </p>
+        {% endif %}
 
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-    <ul>
-      {% for message in messages %}
-      <li><strong>{{message}}</strong></li>
-      {% endfor%}
-    </ul>
-    {% endif %}
-    {% endwith%}
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul>
+          {% for message in messages %}
+          <li><strong>{{message}}</strong></li>
+          {% endfor%}
+        </ul>
+        {% endif %}
+        {% endwith%}
 
-    <a href="{{url_for('checkUserWhenAddItem')}}"><h3>Post a camera for sell!<h3></a>
+        <a href="{{url_for('showCameras')}}"><h3>Back to Homepage<h3></a>
+        <a href="{{url_for('checkUserWhenAddItem')}}"><h3>Post a camera for sell!<h3></a>
+      </div>
 
-    {% if length > 0 %}
+      <div class=sideBar>
+        <div class=brand>
+          <dt>Brands:</dt>
 
-      <div>
+            {% for b in brands %}
+            <dd><a href="{{url_for('showCamerasWithBrand',brand_id=b.id)}}"><h3>{{b.name}}<h3></a></dd>
+            {% endfor %}
+      </div>
+
+      {% if length > 0 %}
+
+      <div class=displayArea>
       {% for i in cameras %}
 
         <div>
@@ -36,6 +49,11 @@
       {% endfor %}
       </div>
 
-     {% endif %}
+      {% endif %}
+     </div>
   </body>
 </html>
+
+
+
+
