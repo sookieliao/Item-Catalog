@@ -20,8 +20,11 @@
         {% endif %}
         {% endwith%}
 
-
-        <a href="{{url_for('showCameras')}}"><h3>Back to Homepage<h3></a>
+        {% if login %}
+        <a href="{{url_for('showMyStore',user_id=user_id)}}"><h3>Go to myStore<h3></a>
+        {% else %}
+        <a href="{{url_for('login')}}"><h3>Login<h3></a>
+        {% endif %}
         <a href="{{url_for('checkUserWhenAddItem')}}"><h3>Post a camera for sell!<h3></a>
       </div>
 
@@ -30,8 +33,8 @@
           <dt>Brands:</dt>
 
             {% for b in brands %}
-            <dd><a href="{{url_for('showCamerasWithBrand',brand_id=b.id)}}"><h3>{{b.name}}<h3></a></dd> 
-            {% endfor %}           
+            <dd><a href="{{url_for('showCamerasWithBrand',brand_id=b.id)}}"><h3>{{b.name}}<h3></a></dd>
+            {% endfor %}
       </div>
 
       <div class=displayArea>
@@ -61,4 +64,3 @@
 
 
 
-    

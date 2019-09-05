@@ -15,37 +15,12 @@ from flask import session as login_session
 import random, string
 
 loggedIn = False
+user_id = 1
 
 @app.route('/login')
 def showLogin():
     state = ''.join(random.choice(string.ascii_uppercase+string.digits) for x in xrange(32))
     login_session['state']=state
-    return render_template('login.html', STATE=state)
-
-# Store the access token in the session for later use.
-
-    login_session['username'] = data['name']
-    login_session['picture'] = data['picture']
-    login_session['email'] = data['email']
-
-    # See if a user exists, if it doesn't make a new one
-
-    user_id = getUserId(login_session['email'])
-    if not user_id:
-        user_id = createUser(login_session)
-    login_session['user_id']=user_id
-
-    output = ''
-    output += '<h1>Welcome, '
-    output += login_session['username']
-    output += '!</h1>'
-    output += '<img src="'
-    output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
-    flash("you are now logged in as %s" % login_session['username'])
-    print "done!"
-    return output
-
 
 def getUserId(email):
     session = DBSession()
@@ -72,6 +47,14 @@ def createUser():
             session.add(user)
             session.commit()
             print "User created successfully with user_id %s!"% user.id
+            loggedIn = True
+            login_session['username']=user.name
+            login_session['id']=user.id
+            login_session['email']=user.email
+            login_session['currentUser'] = login_session['username']
+            flash("you are now logged in as %s" % login_session['username'])
+
+            print "Redirecting to my store..."
             return redirect(url_for('showMyStore', user_id=user.id))
         else:
             print "Password doesn't match. Please try again."
@@ -82,8 +65,10 @@ def login():
     if request.method == 'GET':
         return render_template('login.html')
     else:
+        print 'authendicating user...'
         session = DBSession()
-        user = session.query(User).filter_by(request.form['email']).one()
+        user = session.query(User).filter_by(email=request.form['email']).first()
+
 
         if not user:
             print "There's no record for this email.Please try again."
@@ -97,6 +82,12 @@ def login():
         else:
             print "Login success. Redirecting to my store..."
             loggedIn = True
+            login_session['username']=user.name
+            login_session['id']=user.user_id
+            login_session['email']=user.email
+            login_session['currentUser']  = login_session['username']
+            flash("you are now logged in as %s" % login_session['username'])
+            print "done!"
             return redirect(url_for('showMyStore', user_id=user.id))
 
 
@@ -112,22 +103,36 @@ def checkUserWhenAddItem():
 @app.route('/')
 @app.route('/sookiesusedcameras')
 def showCameras():
+    loggedIn = False
+    print loggedIn
+    print 'login_session: %s' % login_session
+    print loggedIn
+    if login_session != None:
+        loggedIn = True
+        #get user id
+    print loggedIn
     session = DBSession()
     cameras = session.query(Camera).all()
-    return render_template('showCameras.html',cameras = cameras, length=len(cameras))
+    #brands = session.query(Brand).all()
+    #conditions = session.query(Condition).all()
+    return render_template('showCameras.html',cameras = cameras, length=len(cameras), login=loggedIn, user_id=user_id)
 
 @app.route('/sookiesusedcameras/brand=<int:brand_id>')
 def showCamerasWithBrand(brand_id):
+    if currentUser == login_session['username']:
+        loggedIn = True
     session = DBSession()
     cameras = session.query(Camera).filter_by(brand_id=brand_id).all()
     brand = session.query(Brand).filter_by(id=brand_id).one()
-    return render_template('showCamerasWithBrand.html',cameras = cameras, length=len(cameras), brand=brand.name)
+    return render_template('showCamerasWithBrand.html',cameras = cameras, length=len(cameras), brand=brand.name, login=loggedIn, user_id=user_id)
 
 @app.route('/sookiesusedcameras/condition=<condition>')
 def showCamerasWithCondition(condition):
+    if currentUser == login_session['username']:
+        loggedIn = True
     session = DBSession()
     cameras = session.query(Camera).filter_by(condition=condition).all()
-    return render_template('showCamerasWithCondition.html',cameras = cameras, length=len(cameras), condition=condition)
+    return render_template('showCamerasWithCondition.html',cameras = cameras, length=len(cameras), condition=condition, login=loggedIn, user_id=user_id)
 
 
 
