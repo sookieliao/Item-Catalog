@@ -43,7 +43,7 @@ session.add(fujifilm)
 session.commit()
 
 # User1 and her cameras
-user1 = User(name="Sookie Sookie",account_name='sookiesookie',password='smartsookie')
+user1 = User(name="Sookie Sookie",email='abc@gmail.com',password='smartsookie')
 session.add(user1)
 session.commit()
 
@@ -66,7 +66,7 @@ session.commit()
 
 
 # User2 and his cameras
-user2 = User(name="Kevin kevin",account_name='kkvin',password='kkvin')
+user2 = User(name="Kevin kevin",email='kkvin@happy.com',password='kkvin')
 session.add(user2)
 session.commit()
 

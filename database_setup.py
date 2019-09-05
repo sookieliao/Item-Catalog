@@ -24,8 +24,8 @@ class User(Base):
     __tablename__ = 'user'
     name = Column(String(80), nullable = False)
     id = Column(Integer, primary_key = True)
-    account_name = Column(String(20), nullable = False)
     password = Column(String(20), nullable = False)
+    email=Column(String(100),nullable=False)
 
 class Camera(Base):
     __tablename__ = 'camera'
