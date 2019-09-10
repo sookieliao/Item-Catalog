@@ -3,42 +3,44 @@
     <link rel="stylesheet" type='text/css' href="{{url_for('static', filename='styles.css')}}">
   </head>
   <body>
-    <h1> My Store </h1>
-    {% if length <= 0 %}
-    <p> You currently have no camera on sell. </p>
-    {% endif %}
+    <section class="header">
+      <h1>Store For {{inputs['user'].name}} </h1>
 
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-    <ul>
-      {% for message in messages %}
-      <li><strong>{{message}}</strong></li>
-      {% endfor%}
-    </ul>
-    {% endif %}
-    {% endwith%}
-    <a href="{{url_for('showCameras')}}"><h3>Back to Homepage<h3></a>
-    <a href="{{url_for('addItem',user_id=user_id)}}"><h3>Post a camera for sell!<h3></a>
-
-    {% if length > 0 %}
-
-      <div>
-      {% for i in cameras %}
-
-        <div>
-          <p class='name'>{{i.name}}</p>
-          <p class='brand'>{{i.brand_id}}
-          <p class='price'>{{i.price}}</p>
-          <p class='condition'>{{i.condition}}</p>
-          <p class='description'>{{i.description}}</p>
-          <a href="{{url_for('editItem',user_id=user_id, camera_id=i.id)}}"><h3>Edit<h3></a>
-          <a href="{{url_for('deleteItem',user_id=user_id, camera_id = i.id)}}"><h3>Delete<h3></a>
-        </div>
-
-
-      {% endfor %}
+      <div class=navigate>
+        <a href="{{url_for('showCameras')}}"><h3>Homepage</h3></a>
+        <a href="{{url_for('logout')}}"><h3>Logout</h3></a>
+        <a href="{{url_for('addItem',user_id=inputs['user_id'])}}"><h3>Add Item</h3></a>
       </div>
 
-     {% endif %}
+    </section>
+    <div class="messaging">
+      {% with messages = get_flashed_messages() %}
+      {% if messages %}
+      <ul>
+        {% for message in messages %}
+        <li><strong>{{message}}</strong></li>
+        {% endfor%}
+      </ul>
+      {% endif %}
+      {% endwith%}
+    </div>
+
+    <div class="mycards content">
+      {% if inputs['camera length'] <= 0 %}
+        <p> You currently have no camera on sell. </p>
+      {% else %}
+        {% for i in inputs['cameras'] %}
+          <div class="card">
+            <p class='name'>{{i.name}}</p>
+            <p class='brand'>{{inputs['brand_id_name'][i.brand_id]}}</p>
+            <p class='price'>{{i.price}}</p>
+            <p class='condition'>{{i.condition}}</p>
+            <p class='description'>{{i.description}}</p>
+            <a href="{{url_for('editItem',user_id=inputs['user_id'], camera_id=i.id)}}"><h3>Edit</h3></a>
+            <a href="{{url_for('deleteItem',user_id=inputs['user_id'], camera_id = i.id)}}"><h3>Delete</h3></a>
+          </div>
+        {% endfor %}
+      {% endif %}
+    </div>
   </body>
 </html>

@@ -3,13 +3,9 @@
     <link rel="stylesheet" type='text/css' href="{{url_for('static', filename='styles.css')}}">
   </head>
   <body>
-    <div>
-      <div class=header>
+    <section class=header>
         <h1> Sookie's Used Cameras </h1>
         <h1> Cameras that are in {{condition}}} condition. </h1>
-        {% if length <= 0 %}
-        <p> There's currently no camera on sell for this brand. </p>
-        {% endif %}
 
         {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -20,41 +16,58 @@
         </ul>
         {% endif %}
         {% endwith%}
+
         {% if login %}
-        <a href="{{url_for('showMyStore'),user_id=user_id}}"><h3>Go to myStore<h3></a>
-        {% else %}
-        <a href="{{url_for('login')}}"><h3>Login<h3></a>
-        <a href="{{url_for('showCameras')}}"><h3>Back to Homepage<h3></a>
-        {% endif %}
-        <a href="{{url_for('checkUserWhenAddItem')}}"><h3>Post a camera for sell!<h3></a>
-      </div>
+        <div class=navigate>
+          <a href="{{url_for('showMyStore'),user_id=user_id}}"><h3>Go to myStore</h3></a>
+          <a href="{{url_for('logout')}}"><h3>Logout</h3></a>
+          {% else %}
+          <a href="{{url_for('login')}}"><h3>Login</h3></a>
+          <a href="{{url_for('showCameras')}}"><h3>Back to Homepage</h3></a>
+          {% endif %}
+          <a href="{{url_for('checkUserWhenAddItem')}}"><h3>Post a camera for sell!</h3></a>
+        </div>
+    </section>
 
-      <div class=sideBar>
-        <div class=brand>
-          <dt>Brands:</dt>
-
-            {% for b in brands %}
-            <dd><a href="{{url_for('showCamerasWithBrand',brand_id=b.id)}}"><h3>{{b.name}}<h3></a></dd>
+    <section class="maincontent">
+      <div class="main">
+        <div class="sideBar content">
+          <div class="option">
+            <dt>Catebory:</dt>
+            {% for c in categories %}
+            <dd><a href="{{url_for('showCamerasWithCategory',category_id=c.id)}}">{{c.name}}</a></dd>
             {% endfor %}
-      </div>
+          </div>
 
-      {% if length > 0 %}
+          <div class="option">
+            <dt>Brands:</dt>
+            {% for b in brands %}
+            <dd><a href="{{url_for('showCamerasWithBrand',brand_id=b.id)}}">{{b.name}}</a></dd>
+            {% endfor %}
 
-      <div class=displayArea>
-      {% for i in cameras %}
+          </div>
 
-        <div>
-          <p class='name'>{{i.name}}</p>
-          <p class='price'>{{i.price}}</p>
-          <p class='course'>{{i.course}}</p>
-          <p class='description'>{{i.description}}</p>
         </div>
 
-      {% endfor %}
-      </div>
+        <div class="displayArea content">
+          {% if inputs['camera length'] <= 0 %}
+            <p> There's currently no camera on sell for this brand. </p>
+          {% else %}
+            {% for i in inputs['cameras'] %}
 
-      {% endif %}
-     </div>
+              <div>
+                <p class='name'>{{i.name}}</p>
+                <p class='brand'>{{i.id}}</p>
+                <p class='price'>{{i.prices}}</p>
+                <p class='condition'>{{i.condition}}</p>
+                <p class='description'>{{i.description}}</p>
+              </div>
+              {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
   </body>
 </html>
 

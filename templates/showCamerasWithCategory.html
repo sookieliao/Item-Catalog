@@ -6,8 +6,8 @@
     <section class="header">
         <h1> Sookie's Used Cameras </h1>
         <div class="navigate">
-          {% if inputs['loggedIn'] %}
-          <a href="{{url_for('showMyStore',user_id=inputs['user_id'])}}"><h3>MyStore</h3></a>
+          {% if inputs[loggedIn] %}
+          <a href="{{url_for('showMyStore',user_id=inputs[user_id])}}"><h3>MyStore</h3></a>
           <a href="{{url_for('logout')}}"><h3>Logout</h3></a>
           {% else %}
           <a href="{{url_for('login',messages='GOOD')}}"><h3>Login</h3></a>
@@ -42,33 +42,29 @@
           <div class="option">
             <dt>Brands:</dt>
             {% for b in inputs['brands'] %}
-              {% if b.id == inputs['targetBrand'].id %}
-              <dd><b>{{b.name}}</b></dd>
-              {% else %}
-              <dd><a href="{{url_for('showCamerasWithBrand',brand_id=b.id)}}">{{b.name}}</a></dd>
-              {% endif %}
+            <dd><a href="{{url_for('showCamerasWithBrand',brand_id=b.id)}}">{{b.name}}</a></dd>
             {% endfor %}
 
           </div>
+
         </div>
 
         <div class="cards content">
           {% if inputs['camera length'] <= 0 %}
-            <p> There's currently no camera on sell with this brand. </p>
+            <p> There's currently no camera on sell. </p>
           {% else %}
             {% for i in inputs['cameras'] %}
 
               <div class="card">
                 <p class='name'>{{i.name}}</p>
                 <p class='brand'>{{inputs['brand_id_name'][i.brand_id]}}</p>
-                <p class='price'>{{i.prices}}</p>
+                <p class='price'>{{i.price}}</p>
                 <p class='condition'>{{i.condition}}</p>
                 <p class='description'>{{i.description}}</p>
               </div>
               {% endfor %}
           {% endif %}
         </div>
-
       </div>
     </section>
 

@@ -3,34 +3,35 @@
     <link rel="stylesheet" type='text/css' href="{{url_for('static', filename='styles.css')}}">
   </head>
   <body>
-    <h1>Make A New Menu Item.</h1>
-    <form action="{{url_for('addItem',user_id=user_id)}}", method='POST'>
-      <dl>
+    <div class="form">
+      <h1>Make A New Menu Item.</h1>
+      <form action="{{url_for('addItem',user_id=user_id)}}", method='POST'>
+        <dl>
+          <dt>Name:</dt>
+          <dd><input type='text' size='30' name='name' placeholder='Camera title...'></dd>
 
-        <dt>Name:</dt>
-        <dd><input type='text' size='30' name='name' placeholder='Camera title...'></dd>
+          <dt>Price:</dt>
+          <dd><input type='text' size='8' name='price'></dd>
 
-        <dt>Price:</dt>
-        <dd><input type='text' size='8' name='price'></dd>
+          <dt>Brand ID:</dt>
+          <dd><input type='text' size='10' name='brand'></dd>
 
-        <dt>Brand:</dt>
-        <dd><input type='text' size='10' name='brand'></dd>
+          <dt>Description:</dt>
+          <dd><textarea name='description' rows='5' cols='40'></textarea></dd>
 
-        <dt>Description:</dt>
-        <dd><textarea name='description' rows='5' cols='40'></textarea></dd>
+          <dt>Condition:</dt>
 
-        <dt>Condition:</dt>
+          <dd><input type='radio' name='condition' value='excellent'>Excellent</dd>
 
-        <dd><input type='radio' name='condition' value='excellent'>Excellent</dd>
+          <dd><input type='radio' name='condition' value='moderate'>Moderate</dd>
 
-        <dd><input type='radio' name='condition' value='moderate'>Moderate</dd>
+          <dd><input type='radio' name='condition' value='not so well'>Not So Well</dd>
 
-        <dd><input type='radio' name='condition' value='not so well'>Not So Well</dd>
-
-      </dl>
+        </dl>
 
         <input type='submit' value='Submit'>
         <a href="{{url_for('showMyStore',user_id=user_id)}}">Cancel</a>
-    </form>
+      </form>
+    </div>
   </body>
 </html>
