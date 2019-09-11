@@ -118,10 +118,6 @@ def login(messages):
             flash("you are now logged in as %s" % login_session['username'])
             return redirect(url_for('showMyStore', user_id=user.id))
 
-# "logout" takes no as parameter, and will always be a GET request.
-# When "logout" is called, it'll wipe out currentUser, username, email and id from login_session,
-# and switch loggedIn to off, indicating the user isn't autheticated. Then the user will be redirected
-# back to homepage(showCameras).
 @app.route('/sookiesusedcameras/logout')
 def logout():
     """ Log out.
@@ -137,7 +133,7 @@ def logout():
     del login_session['username']
     del login_session['email']
     del login_session['id']
-    login_session['loggedIn']=Flase
+    login_session['loggedIn']=False
     flash("you are now logged out.")
     return redirect(url_for('showCameras'))
 
