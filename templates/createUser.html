@@ -5,14 +5,20 @@
   <body>
     <div class="form">
       <h1>Create your account...</h1>
-      <form action="{{url_for('createUser')}}", method='POST'>
+      <form action="{{url_for('createUser',messages="DEFAULT")}}", method='POST'>
         <dl>
 
           <dt>Userame:</dt>
-          <dd><input type='text' size='30' name='name'></dd>
+            {% if inputs['name'] %}
+              <dd><input type='text' size='30' name='name' placeholder={{inputs['name']}}></dd>
+            {% endif %}
+            <dd><input type='text' size='30' name='name'></dd>
 
           <dt>Email:</dt>
-          <dd><input type='email' size='30' name='email'></dd>
+            {% if inputs['email'] %}
+              <dd><input type='email' size='30' name='email' placeholder={{inputs['email']}}></dd>
+            {% endif %}
+            <dd><input type='email' size='30' name='email'></dd>
 
           <dt>Password:</dt>
           <dd><input type='password' size='20' name='password1'></dd>
@@ -25,6 +31,11 @@
         <input type='submit' value='Submit'>
         <a href="{{url_for('showCameras')}}">Cancel</a>
       </form>
+      <div class="messaging">
+      {% if inputs['messages'] %}
+        <p><b>{{inputs['messages']}}</b></p>
+      {% endif %}
+      </div>
     </div>
   </body>
 </html>
