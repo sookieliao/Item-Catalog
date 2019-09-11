@@ -1,23 +1,40 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
-app = Flask(__name__)
-
+# these imports are for utilizing sqlalchemy to build and access our database.
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Category, Brand, User, Camera
+# this import is for managing user session
+from flask import session as login_session
 
 # Connect to database
+# Future users should change the data base name('cameras.db') based on their own db names.
 engine = create_engine('sqlite:///cameras.db')
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 
-# create user session with flask.
-from flask import session as login_session
-import random, string
+app = Flask(__name__)
 
+# Create a global variable to keep the login state.
 loggedIn = False
 
 @app.route('/sookiesusedcameras/newuser/<messages>', methods=['GET','POST'])
 def createUser(messages):
+    """ Create new user.
+
+    Parameters
+    ----------
+    messages: string, error message
+
+    CreateUser() takes <messages> as parameter, and receives two types of requests.
+    When it's a "GET" request, we pass on the error messages and render the template for creating user.
+    However, with "DEFAULT" it means there's no error, and as a result, we set the error message to None.
+    When it's a "POST" request, we perform checking for username, email, and password. If anything is wrong,
+    we redirect user to the "createUser" page(with a GET request) with an error message indicating something
+    is wrong and action needs to be taken.
+    If everything goes well, we extrac all the data user filled out and create a user with them. Then we
+    add user's information to login_session indicating current user, and redirect user to his/her page.(showMyStore)
+
+    """
     inputs = {}
     if messages == "DEFAULT":
         messages = None
@@ -27,7 +44,6 @@ def createUser(messages):
         return render_template('createUser.html', inputs=inputs)
     else:
         session = DBSession()
-
         if not request.form['name']:
             inputs['messages']= "Username is required. Please fill it up."
             return redirect(url_for('createUser', messages=inputs['messages']))
@@ -51,9 +67,24 @@ def createUser(messages):
             flash("you are now logged in as %s" % login_session['username'])
             return redirect(url_for('showMyStore', user_id=user.id))
 
-
 @app.route('/sookiesusedcameras/login/message/<messages>', methods=['GET','POST'])
 def login(messages):
+    """ Log in.
+
+    Parameters
+    ----------
+    messages: string, error message
+
+    login takes <messages> as parameter, and receives two types of requests.
+    When it's a "GET" request, we pass on the error messages and render the template for logging in.
+    However, with "GOOD" it means there's no error, and as a result, we set the error message to None.
+    When it's a "POST" request, we first perform checking for username, email, and passwords. If anything is wrong,
+    we redirect user back to the "login" page(with a GET request) with an error message indicating something
+    is wrong and action needs to be taken.
+    If everything goes well, we add user's information to login_session indicating current user, and redirect user
+    to his/her page.(showMyStore)
+
+    """
     inputs = {}
     if messages == "GOOD":
         messages = None
@@ -87,19 +118,43 @@ def login(messages):
             flash("you are now logged in as %s" % login_session['username'])
             return redirect(url_for('showMyStore', user_id=user.id))
 
+# "logout" takes no as parameter, and will always be a GET request.
+# When "logout" is called, it'll wipe out currentUser, username, email and id from login_session,
+# and switch loggedIn to off, indicating the user isn't autheticated. Then the user will be redirected
+# back to homepage(showCameras).
 @app.route('/sookiesusedcameras/logout')
 def logout():
+    """ Log out.
+
+    logout takes no as parameter, and will always be a GET request.
+    When "logout" is called, it'll wipe out currentUser, username, email and id from login_session,
+    and switch loggedIn to off, indicating the user isn't autheticated. Then the user will be redirected
+    back to homepage(showCameras).
+
+    """
+    loggedIn = False
     del login_session['currentUser']
     del login_session['username']
     del login_session['email']
     del login_session['id']
+    login_session['loggedIn']=Flase
     flash("you are now logged out.")
-    loggedIn = False
     return redirect(url_for('showCameras'))
+
 
 @app.route('/')
 @app.route('/sookiesusedcameras')
 def showCameras():
+    """ Display all cameras stored in the database.
+
+    showCameras takes no as parameter, and will always be a GET request.
+    When "showCameras" is called, it'll grab all camera data from the data base and display them.
+    At the same time, hyperlinks for login/logout, myStore, addItem will be render at the corner so
+    that users can navigate themselves to wherever they want to do. (Links displayed are based on whether
+    current is logged in.)
+    Also, on the left side, there's a block showing links based on categories and brands, so that users
+    have the option of view cameras for a certain category/brand.
+    """
     inputs = {}
     inputs['loggedIn'] = False
 
@@ -131,8 +186,16 @@ def showCameras():
 
     return render_template('showCameras.html',inputs=inputs)
 
+
 @app.route('/sookiesusedcameras/brand/<int:brand_id>')
 def showCamerasWithBrand(brand_id):
+    """ Display cameras of specified brand stored in the database.
+
+    Parameters
+    ----------
+    brand_id: int, specified brand id for retriving.
+
+    """
     inputs = {}
     inputs['loggedIn'] = False
 
@@ -169,6 +232,13 @@ def showCamerasWithBrand(brand_id):
 
 @app.route('/sookiesusedcameras/category/<int:category_id>')
 def showCamerasWithCategory(category_id):
+    """ Display cameras of specified category stored in the database.
+
+    Parameters
+    ----------
+    category_id: int, specified category id for retriving.
+
+    """
     inputs = {}
     inputs['loggedIn'] = False
 
@@ -207,6 +277,13 @@ def showCamerasWithCategory(category_id):
 
 @app.route('/sookiesusedcameras/use/<int:user_id>/newcamera', methods=['GET','POST'])
 def addItem(user_id):
+    """ Add item.
+
+    Parameters
+    ----------
+    user_id: int, indicating which user owns the new item.
+
+    """
     inputs = {}
     if "currentUser" in login_session :
         inputs['loggedIn'] = True
@@ -227,6 +304,13 @@ def addItem(user_id):
 #try @app.route('/sookiesusedcameras/mystore=<int:user_id>', methods=['GET','POST'])
 @app.route('/sookiesusedcameras/user/<int:user_id>')
 def showMyStore(user_id):
+    """ Display all cameras stored in the database for specified user.
+
+    Parameters
+    ----------
+    user_id: int, indicating which user it is.
+
+    """
     inputs = {}
 
     if "currentUser" in login_session :
@@ -261,6 +345,14 @@ def showMyStore(user_id):
 
 @app.route('/sookiesusedcameras/user/<int:user_id>/camera/<int:camera_id>/edit', methods=['GET','POST'])
 def editItem(user_id, camera_id):
+    """ Edit item.
+
+    Parameters
+    ----------
+    user_id: int, indicating which user this item belongs to.
+    camera_id: int, specifying which camera to edit.
+
+    """
     inputs = {}
     if "currentUser" in login_session :
         inputs['loggedIn'] = True
@@ -292,6 +384,14 @@ def editItem(user_id, camera_id):
 
 @app.route('/sookiesusedcameras/user/<int:user_id>/camera/<int:camera_id>/delete', methods=['GET','POST'])
 def deleteItem(user_id, camera_id):
+    """ Delete item.
+
+    Parameters
+    ----------
+    user_id: int, indicating which user this item belongs to.
+    camera_id: int, specifying which camera to delete.
+
+    """
     inputs = {}
     if "currentUser" in login_session :
         inputs['loggedIn'] = True
@@ -311,33 +411,62 @@ def deleteItem(user_id, camera_id):
 # These are for API calls that returns JSON file
 @app.route('/sookiesusedcameras/JSON')
 def getCameras():
+    """ Retrieve JSON for all cameras. """
     session = DBSession()
     cams = session.query(Camera).all()
     return jsonify(cameras=[r.serialize for r in cams])
 
 @app.route('/sookiesusedcameras/brand/<brand_id>/JSON')
 def getCamerasWithBrand(brand_id):
+    """ Retrieve JSON for all cameras with specific brand.
+
+    Parameters
+    ----------
+    brand_id: int, specified brand id for retriving.
+
+    """
     session = DBSession()
     cams = session.query(Camera).filter_by(brand_id=brand_id).all()
     return jsonify(cameras=[r.serialize for r in cams])
 
 @app.route('/sookiesusedcameras/category/<category_id>/JSON')
 def getCamerasWithCategory(category_id):
+    """ Retrieve JSON for all cameras with specific category.
+
+    Parameters
+    ----------
+    category_id: int, specified category id for retriving.
+
+    """
     session = DBSession()
     cams = session.query(Camera).filter_by(category_id=category_id).all()
     return jsonify(cameras=[r.serialize for r in cams])
 
 @app.route('/sookiesusedcameras/user/<int:user_id>/JSON')
 def getMyStore(user_id):
+    """ Retrieve JSON for all cameras belong to specific user.
+
+    Parameters
+    ----------
+    user_id: int, indicating which user it is.
+
+    """
     session = DBSession()
     cams = session.query(Camera).filter_by(user_id=user_id).all()
     return jsonify(cameras=[r.serialize for r in cams])
 
-@app.route('/sookiesusedcameras/user/<int:user_id>/camera/<int:camera_id>/JSON')
-def getMyCamera(user_id, camera_id):
+@app.route('/sookiesusedcameras/camera/<int:camera_id>/JSON')
+def getMyCamera(camera_id):
+    """ Retrieve JSON for a specific camera.
+
+    Parameters
+    ----------
+    camera_id: int, indicate which camera it is.
+
+    """
     session = DBSession()
-    cams = session.query(Camera).filter_by(user_id=user_id).all()
-    return jsonify(camera=[c.serialize for c in cams if c.id==camera_id])
+    cam = session.query(Camera).filter_by(id=camera_id).all()
+    return jsonify(cam[0].serialize)
 
 
 if __name__ == '__main__':
