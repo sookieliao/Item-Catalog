@@ -1,8 +1,8 @@
-# Item-Catalog
+# Item-Catalog (Local Authentication)
 project for section " Database with SQL and python" in Udacity full-stack nano degree course.
 
 # Introduction
-This is a simple version of web api, which utilizes sqlAlchemy for database operations and flask for web operations. Local database authentication is adopted. The content is a camera selling platform where user can browse all cameras available, or specify a specific brand/category of camera that they wanna have a look at. After loggin in, they can also view cameras of their own, add new camera, edit and delete existing one. This server also allow users to retrieve the JSON files for cameras/camera. Here's a quick look of how it is.
+This is a simple version of web api, which utilizes sqlAlchemy for database operations and flask for web operations. **Local database authentication** is adopted. The content is a camera selling platform where user can browse all cameras available, or specify a specific brand/category of camera that they wanna have a look at. After loggin in, they can also view cameras of their own, add new camera, edit and delete existing one. This server also allow users to retrieve the JSON files for cameras/camera. Here's a quick look of how it is.
 
 # Database setup.
 1. database_setup.py is required for defining all tables needed. You can define database by running `python database_setup.py`.If you need to define your own table or add extra tables, this is the file to go.
